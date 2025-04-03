@@ -25,8 +25,9 @@ This project is designed to demonstrate SQL skills and techniques typically used
 ```sql
 CREATE DATABASE p1_retail_db;
 
-CREATE TABLE retail_sales
-(
+USE p1_retail_db;
+
+CREATE TABLE retail_sales (
     transactions_id INT PRIMARY KEY,
     sale_date DATE,	
     sale_time TIME,
@@ -35,10 +36,11 @@ CREATE TABLE retail_sales
     age INT,
     category VARCHAR(35),
     quantity INT,
-    price_per_unit FLOAT,	
-    cogs FLOAT,
-    total_sale FLOAT
+    price_per_unit DECIMAL(10,2),	
+    cogs DECIMAL(10,2),
+    total_sale DECIMAL(10,2)
 );
+
 ```
 
 ### 2. Data Exploration & Cleaning
@@ -49,21 +51,31 @@ CREATE TABLE retail_sales
 - **Null Value Check**: Check for any null values in the dataset and delete records with missing data.
 
 ```sql
+-- Count total rows in the table
 SELECT COUNT(*) FROM retail_sales;
+
+-- Count distinct customers
 SELECT COUNT(DISTINCT customer_id) FROM retail_sales;
+
+-- Get distinct product categories
 SELECT DISTINCT category FROM retail_sales;
 
+-- Find rows with NULL values in any column
 SELECT * FROM retail_sales
 WHERE 
     sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
     gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL OR 
+    total_sale IS NULL;
 
+-- Delete rows with NULL values
 DELETE FROM retail_sales
 WHERE 
     sale_date IS NULL OR sale_time IS NULL OR customer_id IS NULL OR 
     gender IS NULL OR age IS NULL OR category IS NULL OR 
-    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL;
+    quantity IS NULL OR price_per_unit IS NULL OR cogs IS NULL OR 
+    total_sale IS NULL;
+
 ```
 
 ### 3. Data Analysis & Findings
@@ -168,23 +180,21 @@ GROUP BY category
 ```
 
 10. **Write a SQL query to create each shift and number of orders (Example Morning <12, Afternoon Between 12 & 17, Evening >17)**:
-```sql
-WITH hourly_sale
-AS
-(
-SELECT *,
-    CASE
-        WHEN EXTRACT(HOUR FROM sale_time) < 12 THEN 'Morning'
-        WHEN EXTRACT(HOUR FROM sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
-        ELSE 'Evening'
-    END as shift
-FROM retail_sales
+WITH hourly_sale AS (
+    SELECT *,
+        CASE
+            WHEN HOUR(sale_time) < 12 THEN 'Morning'
+            WHEN HOUR(sale_time) BETWEEN 12 AND 17 THEN 'Afternoon'
+            ELSE 'Evening'
+        END AS shift
+    FROM retail_sales
 )
 SELECT 
     shift,
-    COUNT(*) as total_orders    
+    COUNT(*) AS total_orders    
 FROM hourly_sale
-GROUP BY shift
+GROUP BY shift;
+
 ```
 
 ## Findings
@@ -204,9 +214,4 @@ GROUP BY shift
 
 This project serves as a comprehensive introduction to SQL for data analysts, covering database setup, data cleaning, exploratory data analysis, and business-driven SQL queries. The findings from this project can help drive business decisions by understanding sales patterns, customer behavior, and product performance.
 
-## How to Use
 
-1. **Clone the Repository**: Clone this project repository from GitHub.
-2. **Set Up the Database**: Run the SQL scripts provided in the `database_setup.sql` file to create and populate the database.
-3. **Run the Queries**: Use the SQL queries provided in the `analysis_queries.sql` file to perform your analysis.
-4. **Explore and Modify**: Feel free to modify the queries to explore different aspects of the dataset or answer additional business questions.
